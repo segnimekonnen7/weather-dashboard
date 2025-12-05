@@ -1,227 +1,96 @@
 # Weather Dashboard API
 
-A production-ready weather dashboard built with FastAPI that provides current weather data, 5-day forecasts, and location search functionality. Features intelligent caching, comprehensive API documentation, and responsive UI.
+Weather API built with FastAPI. Integrates with OpenWeatherMap and has a simple caching system to avoid hitting their API too much.
+
+## What it does
+
+Gets current weather and 5-day forecasts for any location. The caching was important because OpenWeatherMap has rate limits on the free tier, so I cache responses for 10 minutes to cut down on API calls.
 
 ## Features
 
-### Backend API (FastAPI)
-- **Current Weather Data:** Temperature, humidity, wind speed, pressure, sunrise/sunset
-- **5-Day Forecasts:** Daily weather predictions with min/max temperatures
-- **Location Search:** Find locations by name with autocomplete suggestions
-- **Intelligent Caching:** 10-minute cache duration to optimize API calls
-- **Error Handling:** Comprehensive error responses with helpful messages
-- **API Documentation:** Auto-generated docs with Swagger UI
-- **Health Monitoring:** Health check endpoint for deployment monitoring
-
-### Frontend Dashboard
-- **Responsive Design:** Works perfectly on desktop, tablet, and mobile
-- **Real-time Search:** Instant weather lookup for any location worldwide
-- **Modern UI:** Clean gradient design with smooth animations
-- **Weather Icons:** Visual weather representations from OpenWeatherMap
-- **Forecast Display:** Clean 5-day forecast with daily summaries
-- **API Statistics:** Live monitoring of cache status and response times
+- Current weather data (temp, humidity, wind, etc.)
+- 5-day forecasts
+- Location search
+- 10-minute caching to reduce API calls
+- Error handling for when the API is down
+- Auto-generated API docs (Swagger UI)
 
 ## Tech Stack
 
-**Backend:**
-- Python 3.11
-- FastAPI (async web framework)
-- HTTPX (async HTTP client)
-- Pydantic (data validation)
-- OpenWeatherMap API integration
+Backend: Python 3.11, FastAPI, HTTPX (async HTTP client), Pydantic  
+Frontend: HTML/CSS/JavaScript  
+Deployment: Docker, Render
 
-**Frontend:**
-- HTML5/CSS3
-- Vanilla JavaScript
-- Responsive grid layouts
-- CSS animations and transitions
+## Setup
 
-**Deployment:**
-- Docker containerization
-- Render.com deployment configuration
-- Environment variable management
+1. Get an OpenWeatherMap API key from https://openweathermap.org/api (free tier works fine)
 
-## Setup and Installation
-
-### 1. Clone the Repository
+2. Set the API key:
 ```bash
-git clone <your-repo-url>
-cd weather-dashboard
+export OPENWEATHER_API_KEY="your_key_here"
 ```
 
-### 2. Get OpenWeatherMap API Key
-1. Visit [OpenWeatherMap API](https://openweathermap.org/api)
-2. Create a free account
-3. Get your API key from the dashboard
-
-### 3. Set Environment Variables
-```bash
-export OPENWEATHER_API_KEY="your_api_key_here"
-```
-
-### 4. Install Dependencies
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Run the Application
+4. Run it:
 ```bash
 python main.py
 ```
 
-The API will be available at `http://localhost:8002`
+API runs on `http://localhost:8002`
 
-### 6. Open the Dashboard
-Open `index.html` in your web browser or serve it with:
+5. Open `index.html` in your browser or:
 ```bash
 python -m http.server 3000
 ```
 
 ## API Endpoints
 
-### Weather Endpoints
-- `GET /weather/current` - Get current weather for a location
-- `GET /weather/forecast` - Get 5-day weather forecast
-- `GET /weather/alerts` - Get weather alerts (demo)
+Weather:
+- `GET /weather/current` - Current weather
+- `GET /weather/forecast` - 5-day forecast
 
-### Location Endpoints
-- `GET /locations/search` - Search for locations by name
+Location:
+- `GET /locations/search` - Search locations
 
-### Utility Endpoints
-- `GET /` - API information and status
-- `GET /health` - Health check for monitoring
+Other:
+- `GET /health` - Health check
 - `GET /cache/stats` - Cache statistics
-- `DELETE /cache/clear` - Clear cache
+- `GET /docs` - Swagger UI docs
 
-### API Documentation
-- `GET /docs` - Interactive Swagger UI documentation
-- `GET /redoc` - ReDoc API documentation
+## The Caching Part
 
-## Example API Responses
+I cache weather data for 10 minutes. This means if someone requests weather for "New York" and someone else requests it 5 minutes later, it uses the cached data instead of calling OpenWeatherMap again. Saves API calls and makes responses faster.
 
-### Current Weather
-```json
-{
-  "location": "New York",
-  "country": "US",
-  "temperature": 22.5,
-  "feels_like": 24.1,
-  "humidity": 65,
-  "pressure": 1013,
-  "wind_speed": 3.2,
-  "weather_main": "Clear",
-  "weather_description": "Clear Sky",
-  "icon": "01d",
-  "sunrise": "2024-01-15T06:45:00",
-  "sunset": "2024-01-15T17:30:00",
-  "timestamp": "2024-01-15T12:00:00"
-}
-```
-
-### 5-Day Forecast
-```json
-{
-  "location": "New York",
-  "country": "US",
-  "forecast": [
-    {
-      "date": "2024-01-15",
-      "temperature_min": 18.2,
-      "temperature_max": 25.8,
-      "humidity": 62,
-      "weather_main": "Sunny",
-      "weather_description": "Clear Sky",
-      "icon": "01d",
-      "wind_speed": 2.8
-    }
-  ],
-  "timestamp": "2024-01-15T12:00:00"
-}
-```
+You can check cache stats at `/cache/stats` and clear it at `/DELETE /cache/clear` if needed.
 
 ## Deployment
 
-### Deploy to Render
-1. Create a new Web Service on [Render](https://render.com)
-2. Connect your GitHub repository
-3. Render will automatically detect the `render.yaml` file
-4. Set the `OPENWEATHER_API_KEY` environment variable
-5. Deploy
+Render: Just connect your GitHub repo and set the `OPENWEATHER_API_KEY` environment variable. It'll auto-deploy.
 
-### Deploy with Docker
+Docker:
 ```bash
 docker build -t weather-dashboard .
 docker run -p 8002:8002 -e OPENWEATHER_API_KEY=your_key weather-dashboard
 ```
 
-## Configuration
+## Why This Project
 
-### Environment Variables
-- `OPENWEATHER_API_KEY` - Your OpenWeatherMap API key (required)
+Good practice for:
+- Working with external APIs
+- Implementing caching
+- Error handling when APIs fail
+- Building async endpoints
 
-### Cache Settings
-- Cache duration: 10 minutes (configurable in `main.py`)
-- Cache type: In-memory (can be upgraded to Redis)
+The caching was the interesting part - had to think about when to expire data and how to handle cache misses.
 
-## Performance Features
+## License
 
-### Caching Strategy
-- 10-minute cache duration for weather data
-- Automatic cache expiration to ensure data freshness
-- Cache statistics endpoint for monitoring
-- Memory-efficient storage with automatic cleanup
-
-### Error Handling
-- Graceful API failures with user-friendly messages
-- Automatic retry logic for network issues
-- Comprehensive error responses with status codes
-- Fallback mechanisms for service unavailability
-
-### Optimization
-- Async/await pattern for non-blocking operations
-- Efficient HTTP client with connection pooling
-- Minimal dependencies for fast startup
-- Responsive design for all device types
-
-## Why This Project Stands Out
-
-### For Software Engineering Internships
-- **External API Integration:** Shows ability to work with third-party services
-- **Caching Implementation:** Demonstrates performance optimization skills
-- **Error Handling:** Production-ready error management and recovery
-- **Documentation:** Professional API documentation and code comments
-- **Deployment Ready:** Docker, environment variables, health checks
-
-### Interview Talking Points
-- "I implemented intelligent caching to reduce API calls by 90%..."
-- "The async architecture can handle hundreds of concurrent requests..."
-- "I integrated with OpenWeatherMap's RESTful API using modern HTTP clients..."
-- "The application includes comprehensive error handling and monitoring..."
-
-### Technical Depth
-- **RESTful API Design:** Following industry best practices
-- **Data Validation:** Pydantic models for type safety
-- **Async Programming:** Modern Python async/await patterns
-- **Production Deployment:** Docker, health checks, monitoring
-
-## Learning Outcomes
-
-This project demonstrates:
-- API Integration - Working with external weather services
-- Caching Strategies - Performance optimization techniques
-- Error Handling - Robust error management and user experience
-- Documentation - Auto-generated API docs and comprehensive README
-- Deployment - Production-ready containerization and cloud deployment
-- Frontend Integration - Building responsive web interfaces
-- Data Processing - Transforming and aggregating weather data
-
-## Links
-
-- **Live Demo:** [Your deployed URL here]
-- **API Documentation:** [Your API docs URL here]
-- **GitHub Repository:** [Your GitHub repo URL here]
+MIT
 
 ---
 
-Built by Segni Mekonnen  
-Showcasing modern backend development with Python and FastAPI
+Built by Segni Mekonnen
